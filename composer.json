@@ -1,0 +1,30 @@
+{
+    "name": "sabre/davclient",
+    "description" : "The sabre/davclient library provides an easy to use library for consuming Web-, Cal- and CardDAV services",
+    "keywords" : [ "WebDAV", "CalDAV", "CardDAV" ],
+    "homepage" : "https://github.com/fruux/sabre-davclient",
+    "license" : "BSD-3-Clause",
+    "require" : {
+        "php"          : ">=5.4.1",
+        "sabre/dav"    : "~1.9.0alpha1"
+    },
+    "minimum-stability" : "dev",
+    "prefer-stable" : true,
+    "authors" : [
+        {
+            "name" : "Evert Pot",
+            "email" : "evert@rooftopsolutions.nl",
+            "homepage" : "http://evertpot.com/",
+            "role" : "Developer"
+        }
+    ],
+    "support" : {
+        "forum" : "https://groups.google.com/group/sabredav-discuss",
+        "source" : "https://github.com/fruux/sabre-davclient"
+    },
+    "autoload" : {
+        "psr-0" : {
+            "Sabre\\DAVClient" : "lib/"
+        }
+    }
+}
