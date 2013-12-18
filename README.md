@@ -1,21 +1,21 @@
 sabre/davclient
 ===============
 
-A webdav, caldav and carddav client for PHP.
+A WebDAV, CalDAV and CardDAV client for PHP.
 
 Note that this library is completely non-functional at the moment ;)
 
 Installation
 ------------
 
-Make sure you have [composer][3] installed. In your project directory, create,
+Make sure you have [Composer][3] installed. In your project directory, create,
 or edit a `composer.json` file, and make sure it contains something like this:
 
 
 ```json
 {
     "require" : {
-        "sabre/dav" : "dev-master"
+        "sabre/davclient" : "dev-master"
     }
 }
 ```
@@ -35,4 +35,4 @@ This library is being developed by [fruux](https://fruux.com/). Drop us a line f
 
 [3]: http://getcomposer.org/
 [4]: http://groups.google.com/group/sabredav-discuss
-[5]: https://github.com/fruux/sabre-event/issues/
+[5]: https://github.com/fruux/sabre-davclient/issues/
