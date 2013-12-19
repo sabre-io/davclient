@@ -19,22 +19,6 @@ use Sabre\HTTP;
 class Client extends HTTP\Client
 {
     /**
-     * The propertyMap is a key-value array.
-     *
-     * If you use the propertyMap, any {DAV:}multistatus responses with the
-     * properties listed in this array, will automatically be mapped to a
-     * respective class.
-     *
-     * The {DAV:}resourcetype property is automatically added. This maps to
-     * Sabre\DAV\Property\ResourceType
-     *
-     * @var array
-     */
-    public $propertyMap = [];
-
-    protected $baseUri;
-
-    /**
      * Basic authentication
      */
     const AUTH_BASIC = 1;
@@ -73,6 +57,41 @@ class Client extends HTTP\Client
      * HTTP error, such as a 4xx or 5xx
      */
     const ERR_HTTP = 2;
+
+    /**
+     * The propertyMap is a key-value array.
+     *
+     * If you use the propertyMap, any {DAV:}multistatus responses with the
+     * properties listed in this array, will automatically be mapped to a
+     * respective class.
+     *
+     * The {DAV:}resourcetype property is automatically added. This maps to
+     * Sabre\DAV\Property\ResourceType
+     *
+     * @var array
+     */
+    public $propertyMap = [];
+
+    /**
+     * Base URI
+     *
+     * @var string
+     */
+    protected $baseUri;
+
+    /**
+     * OAuth2 accessToken
+     *
+     * @var string
+     */
+    protected $accessToken;
+
+    /**
+     * OAuth2 tokenType
+     *
+     * @var string
+     */
+    protected $tokenType;
 
     /**
      * Content-encoding
@@ -118,13 +137,6 @@ class Client extends HTTP\Client
             throw new \InvalidArgumentException('A baseUri must be provided');
         }
 
-        $validSettings = array(
-            'baseUri',
-            'userName',
-            'password',
-            'proxy',
-        );
-
         parent::__construct();
 
         $this->baseUri = $settings['baseUri'];
@@ -133,6 +145,7 @@ class Client extends HTTP\Client
             $this->addCurlSetting(CURLOPT_PROXY, $settings['proxy']);
         }
 
+        // basic/digest auth
         if (isset($settings['userName'])) {
             $userName = $settings['userName'];
             $password = isset($settings['password'])?$settings['password']:'';
@@ -153,9 +166,15 @@ class Client extends HTTP\Client
 
             $this->addCurlSetting(CURLOPT_HTTPAUTH, $curlType);
             $this->addCurlSetting(CURLOPT_USERPWD, $userName . ':' . $password);
-
         }
 
+        // oauth2
+        if (isset($settings['accessToken'], $settings['tokenType'])) {
+            $this->accessToken = $settings['accessToken'];
+            $this->tokenType = $settings['tokenType'];
+        }
+
+        // encoding
         if (isset($settings['encoding'])) {
             $encoding = $settings['encoding'];
 
@@ -255,7 +274,7 @@ class Client extends HTTP\Client
 
         $url = $this->getAbsoluteUrl($url);
 
-        $request = new HTTP\Request('PROPFIND', $url, [
+        $request = $this->createRequest('PROPFIND', $url, [
             'Depth' => $depth,
             'Content-Type' => 'application/xml'
         ], $body);
@@ -343,7 +362,7 @@ class Client extends HTTP\Client
         $body = $dom->saveXML();
 
         $url = $this->getAbsoluteUrl($url);
-        $request = new HTTP\Request('PROPPATCH', $url, [
+        $request = $this->createRequest('PROPPATCH', $url, [
             'Content-Type' => 'application/xml',
         ], $body);
         $this->send($request);
@@ -360,7 +379,7 @@ class Client extends HTTP\Client
      */
     public function options()
     {
-        $request = new HTTP\Request('OPTIONS', $this->getAbsoluteUrl(''));
+        $request = $this->createRequest('OPTIONS', $this->getAbsoluteUrl(''));
         $response = $this->send($request);
 
         $dav = $response->getHeader('Dav');
@@ -411,12 +430,13 @@ class Client extends HTTP\Client
     {
         $url = $this->getAbsoluteUrl($url);
 
-        $response = $this->send(new HTTP\Request($method, $url, $headers, $body));
+        $request = $this->createRequest($method, $url, $headers, $body);
+        $response = $this->send($request);
 
         return [
             'body' => $response->getBody($asString = true),
             'statusCode' => (int)$response->getStatus(),
-            'headers' => array_change_key_case($response->getHeaders()),
+            'headers' => array_change_key_case($response->getHeaders())
         ];
     }
 
@@ -560,6 +580,15 @@ class Client extends HTTP\Client
             curl_multi_select($this->curlMultiHandle);
             $stillRunning = $this->processQueue();
         } while ($stillRunning);
+    }
+
+    protected function createRequest($method, $url, $headers, $body)
+    {
+        if (!array_key_exists('Authorization', $headers) && $this->accessToken && $this->tokenType) {
+            $headers['Authorization'] = $this->tokenType . ' ' . $this->accessToken;
+        }
+
+        return new HTTP\Request($method, $url, $headers, $body);
     }
 
     protected function processQueue()
