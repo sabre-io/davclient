@@ -1,6 +1,6 @@
 <?php
 
-namespace Sabre\DAV;
+namespace Sabre\DAVClient;
 
 use Sabre\HTTP;
 

@@ -24,8 +24,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Sabre\\DAV\\Client": "lib/",
-            "Sabre\\CardDAV\\Client": "lib/"
+            "Sabre\\DAVClient\\Client": "lib/"
         }
     }
 }
