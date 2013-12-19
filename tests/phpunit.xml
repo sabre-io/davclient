@@ -7,7 +7,7 @@
   strict="true"
   >
   <testsuite name="sabre-davclient">
-      <directory>Sabre/CardDAV</directory>
+      <directory>Sabre/DAVClient</directory>
   </testsuite>
 
   <filter>

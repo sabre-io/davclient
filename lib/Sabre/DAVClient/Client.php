@@ -2,7 +2,11 @@
 
 namespace Sabre\DAVClient;
 
-use Sabre\HTTP;
+use
+    Sabre\HTTP,
+    Sabre\DAV\XMLUtil,
+    Sabre\DAV\Property,
+    Sabre\DAV\Exception;
 
 /**
  * SabreDAV DAV client
