@@ -6,7 +6,8 @@
     "license": "BSD-3-Clause",
     "require": {
         "php": ">=5.4.1",
-        "sabre/dav": "~1.9.0alpha1"
+        "sabre/dav": "~1.9.0alpha1",
+        "sabre/http" : "dev-master as 2.0.0alpha6"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
