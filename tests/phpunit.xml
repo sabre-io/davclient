@@ -5,9 +5,9 @@
   convertNoticesToExceptions="true"
   convertWarningsToExceptions="true"
   strict="true"
-  >
+>
   <testsuite name="sabre-davclient">
-      <directory>Sabre/CardDAV</directory>
+      <directory>Sabre/DAV/Client/Tests</directory>
   </testsuite>
 
   <filter>
