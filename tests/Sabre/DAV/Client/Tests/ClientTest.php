@@ -1,8 +1,6 @@
 <?php
 
-namespace Sabre\DAV;
-
-require_once 'Sabre/DAV/ClientMock.php';
+namespace Sabre\DAV\Client\Tests;
 
 class ClientTest extends \PHPUnit_Framework_TestCase {
 
@@ -11,7 +9,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
         $client = new ClientMock(array(
             'baseUri' => '/',
         ));
-        $this->assertInstanceOf('Sabre\DAV\ClientMock', $client);
+        $this->assertInstanceOf('Sabre\DAV\Client\Tests\ClientMock', $client);
 
     }
 
@@ -339,7 +337,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
             'baseUri' => 'http://example.org/foo/bar/',
             'userName' => 'user',
             'password' => 'password',
-            'authType' => Client::AUTH_BASIC,
+            'authType' => ClientMock::AUTH_BASIC,
         ));
 
         $responseBlob = array(
@@ -396,7 +394,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
             'baseUri' => 'http://example.org/foo/bar/',
             'userName' => 'user',
             'password' => 'password',
-            'authType' => Client::AUTH_DIGEST,
+            'authType' => ClientMock::AUTH_DIGEST,
         ));
 
         $responseBlob = array(
@@ -930,7 +928,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 
         $client = new ClientMock(array(
             'baseUri' => 'http://example.org/foo/bar/',
-            'encoding' => Client::ENCODING_ALL,
+            'encoding' => ClientMock::ENCODING_ALL,
         ));
 
         $responseBlob = array(
