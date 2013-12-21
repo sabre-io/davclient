@@ -413,8 +413,6 @@ class Client extends HTTP\Client
      */
     public function request($method, $url = '', $body = null, array $headers = [])
     {
-        $url = $this->getAbsoluteUrl($url);
-
         $response = $this->send(new HTTP\Request($method, $url, $headers, $body));
 
         return [
@@ -422,6 +420,25 @@ class Client extends HTTP\Client
             'statusCode' => (int)$response->getStatus(),
             'headers' => array_change_key_case($response->getHeaders()),
         ];
+    }
+
+    /**
+     * Sends a request to a HTTP server, and returns a response.
+     *
+     * Switches request URL for absolute URL
+     *
+     * @param RequestInterface $request
+     * @return ResponseInterface
+     */
+    public function send(HTTP\RequestInterface $request)
+    {
+        $url = $request->getUrl();
+
+        $absoluteUrl = $this->getAbsoluteUrl($url);
+
+        $request->setUrl($absoluteUrl);
+
+        return parent::send($request);
     }
 
     /**
