@@ -8,6 +8,9 @@ matrix:
   allow_failures:
     - php: hhvm
 
+before_script:
+  - composer install --prefer-source
+
 script:
   - phpunit --configuration tests/phpunit.xml
 
