@@ -1,6 +1,6 @@
 <?php
 
-namespace Sabre\DAV\Client\RequestBuilder;
+namespace Sabre\DAVClient\RequestBuilder;
 
 interface RequestBuilderInterface
 {

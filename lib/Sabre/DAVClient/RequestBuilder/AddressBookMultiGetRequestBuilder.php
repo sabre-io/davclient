@@ -1,10 +1,8 @@
 <?php
 
-namespace Sabre\CardDAV\Client\RequestBuilder;
+namespace Sabre\DAVClient\RequestBuilder;
 
-use Sabre\DAV\Client\RequestBuilder\RequestBuilderInterface;
 use Sabre\HTTP;
-use XMLWriter;
 
 class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
 {
@@ -29,7 +27,7 @@ class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
 
     protected function writeXML()
     {
-        $xml = new XMLWriter;
+        $xml = new \XMLWriter;
         $xml->openMemory();
         $xml->setIndent(4);
         $xml->startDocument('1.0', 'utf-8');
