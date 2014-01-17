@@ -4,7 +4,9 @@ namespace Sabre\DAVClient\Adapter;
 
 use Sabre\HTTP,
     Sabre\DAVClient\Client,
-    Sabre\DAVClient\RequestBuilder;
+    Sabre\DAVClient\RequestBuilder,
+    Sabre\DAV\XMLUtil,
+    Sabre\DAV\Property\ResponseList;
 
 class CardDAVAdapter
 {
@@ -24,7 +26,7 @@ class CardDAVAdapter
         return $this->client->send($request);
     }
 
-    public function syncCollectionReport($uri, $sync_token = null, $sync_level = 'infinite')
+    public function syncCollectionReport($uri, $sync_token = null, $sync_level = 1)
     {
         $builder = new RequestBuilder\SyncCollectionReportRequestBuilder($uri, $sync_token, $sync_level);
 

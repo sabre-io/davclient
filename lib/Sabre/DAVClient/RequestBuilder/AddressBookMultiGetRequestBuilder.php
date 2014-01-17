@@ -34,6 +34,7 @@ class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
             $xml->startElement('a:addressbook-multiget');
                 $xml->writeAttribute('xmlns:d', 'DAV:');
                 $xml->writeAttribute('xmlns:a', 'urn:ietf:params:xml:ns:carddav');
+                $xml->writeElement('d:sync-token');
                 $xml->startElement('d:prop');
                     $xml->writeElement('d:getetag');
                     $xml->writeElement('a:address-data');
