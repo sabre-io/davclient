@@ -4,9 +4,7 @@ namespace Sabre\DAVClient\Adapter;
 
 use Sabre\HTTP,
     Sabre\DAVClient\Client,
-    Sabre\DAVClient\RequestBuilder,
-    Sabre\DAV\XMLUtil,
-    Sabre\DAV\Property\ResponseList;
+    Sabre\DAVClient\RequestBuilder;
 
 class CardDAVAdapter
 {
