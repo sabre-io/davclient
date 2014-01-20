@@ -8,7 +8,7 @@ class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
 {
     protected $contacts;
 
-    protected $headers = ['Content-Type' => 'application/xml'];
+    protected $headers = ['Content-Type' => 'text/xml'];
 
     protected $method = 'REPORT';
 
