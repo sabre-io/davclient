@@ -509,7 +509,13 @@ class Client extends HTTP\Client
         $result = [];
 
         foreach ($responses->getResponses() as $response) {
-            $result[$response->getHref()] = $response->getResponseProperties();
+            $properties = $response->getResponseProperties();
+
+            if ($response->getHttpStatus()) {
+                $properties += [$response->getHttpStatus() => []];
+            }
+
+            $result[$response->getHref()] = $properties;
         }
 
         return $result;
