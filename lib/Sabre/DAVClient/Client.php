@@ -78,6 +78,8 @@ class Client extends HTTP\Client
      */
     const ERR_HTTP = 2;
 
+    protected $adapters = [];
+
     /**
      * Content-encoding
      *
@@ -511,5 +513,39 @@ class Client extends HTTP\Client
         }
 
         return $result;
+    }
+
+    public function getAdapter($adapterName, $adapterClass)
+    {
+        if (!array_key_exists($adapterName, $this->adapters)) {
+            $this->registerAdapter($adapterName, $adapterClass);
+        }
+
+        return $this->adapters[$adapterName];
+    }
+
+    public function registerAdapter($adapterName, $adapterClass)
+    {
+        if (array_key_exists($adapterName, $this->adapters)) {
+            throw Exceptions\AdapterAlreadyRegisteredException('An adapter by then name "' . $adapterName . '" is already registered.');
+        }
+
+        $this->adapters[$adapterName] = new $adapterClass($this);
+
+        return $this;
+    }
+
+    public function registerAdapters($adapters)
+    {
+        foreach ($adapters as $adapterName => $adapterClass) {
+            $this->registerAdapter($adapterName, $adapterClass);
+        }
+
+        return $this;
+    }
+
+    public function getCardDAVAdapter()
+    {
+        return $this->getAdapter('CardDAV', 'Sabre\\DAVClient\\Adapter\\CardDAVAdapter');
     }
 }

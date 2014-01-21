@@ -4,20 +4,21 @@ namespace Sabre\DAVClient\RequestBuilder;
 
 use Sabre\HTTP;
 
-class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
+class SyncCollectionReportRequestBuilder implements RequestBuilderInterface
 {
-    protected $contacts;
+    protected $sync_token;
 
-    protected $headers = ['Content-Type' => 'text/xml'];
+    protected $headers = ['Content-Type' => 'text/xml', 'Depth' => 1];
 
     protected $method = 'REPORT';
 
     protected $url;
 
-    public function __construct($url, array $contacts)
+    public function __construct($url, $sync_token = null, $sync_level = 1)
     {
         $this->url = $url;
-        $this->contacts = $contacts;
+        $this->sync_token = $sync_token;
+        $this->sync_level = $sync_level;
     }
 
     public function build()
@@ -31,19 +32,13 @@ class AddressBookMultiGetRequestBuilder implements RequestBuilderInterface
         $xml->openMemory();
         $xml->setIndent(4);
         $xml->startDocument('1.0', 'utf-8');
-            $xml->startElement('a:addressbook-multiget');
+            $xml->startElement('d:sync-collection');
                 $xml->writeAttribute('xmlns:d', 'DAV:');
-                $xml->writeAttribute('xmlns:a', 'urn:ietf:params:xml:ns:carddav');
-                $xml->writeElement('d:sync-token');
+                $xml->writeElement('d:sync-token', $this->sync_token);
+                $xml->writeElement('d:sync-level', $this->sync_level);
                 $xml->startElement('d:prop');
                     $xml->writeElement('d:getetag');
-                    $xml->writeElement('a:address-data');
                 $xml->endElement();
-
-                foreach ($this->contacts as $contact) {
-                    $xml->writeElement('d:href', $contact);
-                }
-
             $xml->endElement();
         $xml->endDocument();
 
