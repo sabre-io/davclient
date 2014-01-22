@@ -3,8 +3,11 @@
 namespace Sabre\DAVClient\Adapter;
 
 use Sabre\HTTP,
+    Sabre\DAVClient\ClarkNotation\CardDAV,
+    Sabre\DAVClient\ClarkNotation\DAV,
     Sabre\DAVClient\Client,
     Sabre\DAVClient\RequestBuilder,
+    Sabre\DAVClient\Sync,
     Sabre\DAV\Property\ResponseList,
     Sabre\DAV\XMLUtil;
 
@@ -17,7 +20,7 @@ class CardDAVAdapter
         $this->client = $client;
     }
 
-    public function addressBookMultiGetReport($uri, $uids = [])
+    public function addressBookMultiGet($uri, array $uids = [])
     {
         $builder = new RequestBuilder\AddressBookMultiGetRequestBuilder($uri, $uids);
 
@@ -28,11 +31,11 @@ class CardDAVAdapter
 
     public function getCTags($uri)
     {
-        $ctags = $this->client->propFind($uri, ['{DAV:}getctag'], 1);
+        $ctags = $this->client->propFind($uri, [DAV::CTAG], 1);
 
         $ctags = array_map(
             function ($ctag) {
-                return $ctag['{DAV:}getctag'];
+                return $ctag[DAV::CTAG];
             },
             $ctags
         );
@@ -42,13 +45,13 @@ class CardDAVAdapter
 
     public function getETags($uri)
     {
-        $etags = $this->client->propFind($uri, ['{DAV:}getetag'], 1);
+        $etags = $this->client->propFind($uri, [DAV::ETAG], 1);
 
         array_shift($etags); // first result references the address book
 
         $etags = array_map(
             function ($etag) {
-                return $etag['{DAV:}getetag'];
+                return $etag[DAV::ETAG];
             },
             $etags
         );
@@ -58,18 +61,31 @@ class CardDAVAdapter
 
     public function getSyncToken($uri)
     {
-        $sync_token = $this->client->propFind($uri, ['{DAV:}sync-token'], 1);
+        $syncToken = $this->client->propFind($uri, [DAV::SYNC_TOKEN], 1);
 
-        return $sync_token[$uri]['{DAV:}sync-token'];
+        return $syncToken[$uri][DAV::SYNC_TOKEN];
     }
 
-    public function syncCollectionReport($uri, $sync_token = null, $sync_level = 1)
+    public function getSyncCollection($uri, $syncToken = null, $syncLevel = 1)
     {
-        $builder = new RequestBuilder\SyncCollectionReportRequestBuilder($uri, $sync_token, $sync_level);
+        $request = (new RequestBuilder\SyncCollectionRequestBuilder($uri, $syncToken, $syncLevel))->build();
 
-        $request = $builder->build();
+        $response = $this->client->send($request);
 
-        return $this->client->send($request);
+        if ($response->getStatus() == 207) {
+            $syncToken = $this->parseMultiStatusSyncToken($response->getBody(true));
+            $responses = $this->client->parseMultiStatus($response->getBody(true));
+        } elseif (!$syncToken && $response->getStatus() == 400) {
+            // fill in for CardDAV servers that do not support token-less sync-collection requests (e.g. Google)
+            $syncToken = $this->getSyncToken($uri);
+
+            $response = $this->addressBookMultiGet($uri, array_keys($this->getEtags($uri)));
+            $responses = $this->client->parseMultiStatus($response->getBody(true));
+        } else {
+            throw new \Exception('HTTP error: ' . $response->getStatus());
+        }
+
+        return new Sync\SyncCollection($syncToken, $responses);
     }
 
     public function parseMultiStatusSyncToken($body) {
