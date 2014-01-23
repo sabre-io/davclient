@@ -2,7 +2,8 @@
 
 namespace Sabre\DAVClient\Adapter;
 
-use Sabre\HTTP,
+use Sabre,
+    Sabre\HTTP,
     Sabre\DAVClient\ClarkNotation\CardDAV,
     Sabre\DAVClient\ClarkNotation\DAV,
     Sabre\DAVClient\Client,
@@ -86,6 +87,54 @@ class CardDAVAdapter
         }
 
         return new Sync\SyncCollection($syncToken, $responses);
+    }
+
+    /**
+     * Returns a valid and unused vCard id
+     *
+     * @return string $id valid vCard id
+     */
+    public function generateVCardID($uri)
+    {
+        $id = null;
+
+        $chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F'];
+
+        for ($i = 0; $i <= 25; $i++) {
+            if ($i == 8 || $i == 17) {
+                $id .= '-';
+            } else {
+                $id .= $chars[mt_rand(0, (count($chars) - 1))];
+            }
+        }
+
+        $response = $this->client->send(new HTTP\Request('GET', $uri . $id));
+
+        switch ($response->getStatus()) {
+            case 200:
+                // id is not unique, try again
+                $id = $this->generateVCardID($uri);
+
+                break;
+            case 404:
+                // do nothing, id is unique
+
+                break;
+            default:
+                throw new \Exception('Unexpected HTTP ' . $response->getStatus() . ' when generating new VCard ID.');
+        }
+
+        return $id;
+    }
+
+    /**
+     * Returns a valid and unused vCard uri
+     *
+     * @return string $uri valid vCard uri
+     */
+    public function generateVCardUri($uri)
+    {
+        return $uri . $this->generateVCardID($uri);
     }
 
     public function parseMultiStatusSyncToken($body) {
