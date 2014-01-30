@@ -23,9 +23,7 @@ class SyncCollection
         foreach ($responses as $uri => $response) {
             if (array_key_exists(200, $response)) {
                 $this->modified[] = new VCardReference($uri, $response[200]);
-            }
-
-            if (array_key_exists(404, $response)) {
+            } elseif (array_key_exists(404, $response)) {
                 $this->deleted[] = new VCardReference($uri, $response[404]);
             }
         }
