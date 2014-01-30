@@ -30,6 +30,11 @@ class CardDAVAdapter
         return $this->client->send($request);
     }
 
+    public function getCTag($uri)
+    {
+        return current($this->getCTags($uri));
+    }
+
     public function getCTags($uri)
     {
         $ctags = $this->client->propFind($uri, [DAV::CTAG], 1);
@@ -44,11 +49,17 @@ class CardDAVAdapter
         return $ctags;
     }
 
+    public function getETag($uri)
+    {
+        return current($this->getETags($uri));
+    }
+
     public function getETags($uri)
     {
         $etags = $this->client->propFind($uri, [DAV::ETAG], 1);
 
-        array_shift($etags); // first result references the address book
+        // if the uri was for the address book, the first result is the address book, with no properties
+        $etags = array_filter($etags);
 
         $etags = array_map(
             function ($etag) {
