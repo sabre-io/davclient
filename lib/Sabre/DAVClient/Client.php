@@ -133,7 +133,7 @@ class Client extends HTTP\Client
 
         parent::__construct();
 
-        $this->baseUri = $settings['baseUri'];
+        $this->setBaseUri($settings['baseUri']);
 
         if (isset($settings['proxy'])) {
             $this->addCurlSetting(CURLOPT_PROXY, $settings['proxy']);
@@ -385,12 +385,24 @@ class Client extends HTTP\Client
         // If the url starts with a slash, we must calculate the url based off
         // the root of the base url.
         if (strpos($url,'/') === 0) {
-            $parts = parse_url($this->baseUri);
+            $parts = parse_url($this->getBaseUri());
             return $parts['scheme'] . '://' . $parts['host'] . (isset($parts['port'])?':' . $parts['port']:'') . $url;
         }
 
         // Otherwise...
-        return $this->baseUri . $url;
+        return $this->getBaseUri() . $url;
+    }
+
+    public function getBaseUri()
+    {
+        return $this->baseUri;
+    }
+
+    public function setBaseUri($uri)
+    {
+        $this->baseUri = $uri;
+
+        return $uri;
     }
 
     /**
