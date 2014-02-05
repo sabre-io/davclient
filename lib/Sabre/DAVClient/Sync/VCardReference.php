@@ -13,19 +13,14 @@ class VCardReference
 
     protected $etag;
 
+    protected $properties;
+
     protected $vcard;
 
     public function __construct($uri, array $properties = [])
     {
-        $this->uri = $uri;
-
-        if (array_key_exists(CardDAV::ADDRESS_DATA, $properties)) {
-            $this->vcard = Sabre\VObject\Reader::read($properties[CardDAV::ADDRESS_DATA]);
-        }
-
-        if (array_key_exists(DAV::ETAG, $properties)) {
-            $this->etag = $properties[DAV::ETAG];
-        }
+        $this->setUri($uri);
+        $this->setProperties($properties);
     }
 
     public function __toString()
@@ -38,13 +33,61 @@ class VCardReference
         return $this->uri;
     }
 
-    public function getVCard()
+    public function setUri($uri)
     {
-        return $this->vcard;
+        $this->uri = $uri;
+
+        return $this;
     }
 
     public function getETag()
     {
         return $this->etag;
+    }
+
+    public function setETag($etag)
+    {
+        $this->etag = $etag;
+
+        return $this;
+    }
+
+    public function getProperties()
+    {
+        return $this->properties;
+    }
+
+    public function setProperties($properties)
+    {
+        $this->properties = $properties;
+
+        $this->parseProperties($properties);
+
+        return $this;
+    }
+
+    public function getVCard()
+    {
+        return $this->vcard;
+    }
+
+    public function setVCard($vcard)
+    {
+        $this->vcard = $vcard;
+
+        return $this;
+    }
+
+    protected function parseProperties()
+    {
+        if (array_key_exists(CardDAV::ADDRESS_DATA, $this->properties)) {
+            $this->setVCard(Sabre\VObject\Reader::read($this->properties[CardDAV::ADDRESS_DATA]));
+        }
+
+        if (array_key_exists(DAV::ETAG, $this->properties)) {
+            $this->setETag($this->properties[DAV::ETAG]);
+        }
+
+        return $this;
     }
 }
