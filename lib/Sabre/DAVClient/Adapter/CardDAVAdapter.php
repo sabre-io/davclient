@@ -21,9 +21,9 @@ class CardDAVAdapter
         $this->client = $client;
     }
 
-    public function addressBookMultiGet($uri, array $uids = [])
+    public function addressBookMultiGet($addressBookUri, array $vcardUris = [])
     {
-        $builder = new RequestBuilder\AddressBookMultiGetRequestBuilder($uri, $uids);
+        $builder = new RequestBuilder\AddressBookMultiGetRequestBuilder($addressBookUri, $vcardUris);
 
         $request = $builder->build();
 
@@ -58,7 +58,7 @@ class CardDAVAdapter
     {
         $etags = $this->client->propFind($uri, [DAV::ETAG], 1);
 
-        // if the uri was for the address book, the first result is the address book, with no properties
+        // if the uri was for an address book, the first result is the address book, with no properties
         $etags = array_filter($etags);
 
         $etags = array_map(
@@ -98,6 +98,42 @@ class CardDAVAdapter
         }
 
         return new Sync\SyncCollection($syncToken, $responses);
+    }
+
+    public function getVCard($addressBookUri, $vcardUri)
+    {
+        return current($this->getVCards($addressBookUri, [$vcardUri]));
+    }
+
+    public function getVCards($addressBookUri, $vcardUris = [])
+    {
+        // if no vcardUri's are passed, request the lot and return all vcards
+        $vcardUris = $vcardUris ?: $this->getVCardUris($addressBookUri);
+
+        $response = $this->addressBookMultiGet($addressBookUri, $vcardUris);
+
+        $multistatus = $this->client->parseMultiStatus($response->getBody(true));
+
+        $results = [];
+
+        foreach ($multistatus as $href => $statusList) {
+            $results[$href] = isset($statusList[200]) ? $statusList[200] : [];
+        }
+
+        $vcards = [];
+
+        foreach ($results as $uri => $result) {
+            $vcard = Sabre\VObject\Reader::read($result[CardDAV::ADDRESS_DATA]);
+
+            $vcards[$uri] = $vcard;
+        }
+
+        return $vcards;
+    }
+
+    public function getVCardUris($addressBookUri)
+    {
+        return array_keys($this->getEtags($addressBookUri));
     }
 
     /**
