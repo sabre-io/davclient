@@ -4,7 +4,7 @@ namespace Sabre\DAVClient\RequestBuilder;
 
 use Sabre\HTTP;
 
-class SyncCollectionReportRequestBuilder implements RequestBuilderInterface
+class SyncCollectionRequestBuilder implements RequestBuilderInterface
 {
     protected $sync_token;
 
@@ -34,10 +34,12 @@ class SyncCollectionReportRequestBuilder implements RequestBuilderInterface
         $xml->startDocument('1.0', 'utf-8');
             $xml->startElement('d:sync-collection');
                 $xml->writeAttribute('xmlns:d', 'DAV:');
+                $xml->writeAttribute('xmlns:a', 'urn:ietf:params:xml:ns:carddav');
                 $xml->writeElement('d:sync-token', $this->sync_token);
                 $xml->writeElement('d:sync-level', $this->sync_level);
                 $xml->startElement('d:prop');
                     $xml->writeElement('d:getetag');
+                    $xml->writeElement('a:address-data');
                 $xml->endElement();
             $xml->endElement();
         $xml->endDocument();
