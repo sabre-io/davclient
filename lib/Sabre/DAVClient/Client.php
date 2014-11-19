@@ -236,35 +236,7 @@ class Client extends HTTP\Client
      */
     public function propFind($url, array $properties, $depth = 0)
     {
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->formatOutput = true;
-        $root = $dom->createElementNS('DAV:', 'd:propfind');
-        $prop = $dom->createElement('d:prop');
-
-        foreach ($properties as $property) {
-            list(
-                $namespace,
-                $elementName
-            ) = XMLUtil::parseClarkNotation($property);
-
-            if ($namespace === 'DAV:') {
-                $element = $dom->createElement('d:'.$elementName);
-            } else {
-                $element = $dom->createElementNS($namespace, 'x:'.$elementName);
-            }
-
-            $prop->appendChild( $element );
-        }
-
-        $dom->appendChild($root)->appendChild( $prop );
-        $body = $dom->saveXML();
-
-        $url = $this->getAbsoluteUrl($url);
-
-        $request = new HTTP\Request('PROPFIND', $url, [
-            'Depth' => $depth,
-            'Content-Type' => 'application/xml'
-        ], $body);
+        $request = (new RequestBuilder\PropFindRequestBuilder($url, $properties, $depth))->build();
 
         $response = $this->send($request);
 
@@ -299,60 +271,13 @@ class Client extends HTTP\Client
      *
      * @param string $url
      * @param array $properties
-     * @return void
+     * @return Response
      */
     public function propPatch($url, array $properties)
     {
-        $dom = new \DOMDocument('1.0', 'UTF-8');
-        $dom->formatOutput = true;
-        $root = $dom->createElementNS('DAV:', 'd:propertyupdate');
+        $request = (new RequestBuilder\PropPathRequestBuilder($url, $properties))->build();
 
-        foreach ($properties as $propName => $propValue) {
-            list(
-                $namespace,
-                $elementName
-            ) = XMLUtil::parseClarkNotation($propName);
-
-            if ($propValue === null) {
-                $remove = $dom->createElement('d:remove');
-                $prop = $dom->createElement('d:prop');
-
-                if ($namespace === 'DAV:') {
-                    $element = $dom->createElement('d:'.$elementName);
-                } else {
-                    $element = $dom->createElementNS($namespace, 'x:'.$elementName);
-                }
-
-                $root->appendChild( $remove )->appendChild( $prop )->appendChild( $element );
-            } else {
-
-                $set = $dom->createElement('d:set');
-                $prop = $dom->createElement('d:prop');
-
-                if ($namespace === 'DAV:') {
-                    $element = $dom->createElement('d:'.$elementName);
-                } else {
-                    $element = $dom->createElementNS($namespace, 'x:'.$elementName);
-                }
-
-                if ( $propValue instanceof Property ) {
-                    $propValue->serialize( new Server, $element );
-                } else {
-                    $element->nodeValue = htmlspecialchars($propValue, ENT_NOQUOTES, 'UTF-8');
-                }
-
-                $root->appendChild( $set )->appendChild( $prop )->appendChild( $element );
-            }
-        }
-
-        $dom->appendChild($root);
-        $body = $dom->saveXML();
-
-        $url = $this->getAbsoluteUrl($url);
-        $request = new HTTP\Request('PROPPATCH', $url, [
-            'Content-Type' => 'application/xml',
-        ], $body);
-        $this->send($request);
+        return $this->send($request);
     }
 
     /**
@@ -509,7 +434,13 @@ class Client extends HTTP\Client
         $result = [];
 
         foreach ($responses->getResponses() as $response) {
-            $result[$response->getHref()] = $response->getResponseProperties();
+            $properties = $response->getResponseProperties();
+
+            if ($response->getHttpStatus()) {
+                $properties += [$response->getHttpStatus() => []];
+            }
+
+            $result[$response->getHref()] = $properties;
         }
 
         return $result;
