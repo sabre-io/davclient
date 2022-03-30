@@ -352,7 +352,11 @@ class Client extends HTTP\Client
         $request = new HTTP\Request('PROPPATCH', $url, [
             'Content-Type' => 'application/xml',
         ], $body);
-        $this->send($request);
+        $response = $this->send($request);
+
+        if ((int)$response->getStatus() >= 400) {
+            throw new Exception('HTTP error: ' . $response->getStatus());
+        }
     }
 
     /**
